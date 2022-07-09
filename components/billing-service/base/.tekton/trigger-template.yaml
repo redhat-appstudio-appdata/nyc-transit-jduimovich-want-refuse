@@ -1,0 +1,53 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  creationTimestamp: null
+  name: billing-service
+  namespace: jduimovich
+spec:
+  params:
+  - name: git-revision
+  resourcetemplates:
+  - apiVersion: tekton.dev/v1beta1
+    kind: PipelineRun
+    metadata:
+      annotations:
+        build.appstudio.openshift.io/application: nyc-transit
+        build.appstudio.openshift.io/build: "true"
+        build.appstudio.openshift.io/component: billing-service
+        build.appstudio.openshift.io/type: build
+        build.appstudio.openshift.io/version: "0.1"
+        pipelines.appstudio.openshift.io/type: build
+      creationTimestamp: null
+      generateName: billing-service-
+      labels:
+        build.appstudio.openshift.io/application: nyc-transit
+        build.appstudio.openshift.io/build: "true"
+        build.appstudio.openshift.io/component: billing-service
+        build.appstudio.openshift.io/type: build
+        build.appstudio.openshift.io/version: "0.1"
+        pipelines.appstudio.openshift.io/type: build
+      namespace: jduimovich
+    spec:
+      params:
+      - name: git-url
+        value: https://github.com/devfile-samples/devfile-sample-code-with-quarkus
+      - name: output-image
+        value: quay.io/redhat-appstudio/user-workload:jduimovich-devfile-sample-code-with-quarkus-$(tt.params.git-revision)
+      - name: dockerfile
+        value: src/main/docker/Dockerfile.jvm.staged
+      - name: path-context
+        value: .
+      pipelineRef:
+        bundle: quay.io/redhat-appstudio/build-templates-bundle:ad4c34b71d468a991450b0091cd96765471ed82d
+        name: docker-build
+      workspaces:
+      - name: workspace
+        persistentVolumeClaim:
+          claimName: appstudio
+        subPath: billing-service/$(tt.params.git-revision)
+      - name: registry-auth
+        secret:
+          secretName: redhat-appstudio-registry-pull-secret
+    status: {}
+status: {}

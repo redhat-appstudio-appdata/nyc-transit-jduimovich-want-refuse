@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app.kubernetes.io/created-by: application-service
+    app.kubernetes.io/instance: billing-service
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: billing-service
+    app.kubernetes.io/part-of: nyc-transit
+  name: billing-service
+  namespace: jduimovich
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: billing-service
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app.kubernetes.io/instance: billing-service
+    spec:
+      containers:
+      - image: quay.io/redhat-appstudio/user-workload:jduimovich-devfile-sample-code-with-quarkus
+        imagePullPolicy: Always
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8081
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        name: container-image
+        ports:
+        - containerPort: 8081
+        readinessProbe:
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          tcpSocket:
+            port: 8081
+        resources:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+status: {}
