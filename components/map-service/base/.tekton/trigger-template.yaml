@@ -1,0 +1,53 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  creationTimestamp: null
+  name: map-service
+  namespace: jduimovich
+spec:
+  params:
+  - name: git-revision
+  resourcetemplates:
+  - apiVersion: tekton.dev/v1beta1
+    kind: PipelineRun
+    metadata:
+      annotations:
+        build.appstudio.openshift.io/application: nyc-transit
+        build.appstudio.openshift.io/build: "true"
+        build.appstudio.openshift.io/component: map-service
+        build.appstudio.openshift.io/type: build
+        build.appstudio.openshift.io/version: "0.1"
+        pipelines.appstudio.openshift.io/type: build
+      creationTimestamp: null
+      generateName: map-service-
+      labels:
+        build.appstudio.openshift.io/application: nyc-transit
+        build.appstudio.openshift.io/build: "true"
+        build.appstudio.openshift.io/component: map-service
+        build.appstudio.openshift.io/type: build
+        build.appstudio.openshift.io/version: "0.1"
+        pipelines.appstudio.openshift.io/type: build
+      namespace: jduimovich
+    spec:
+      params:
+      - name: git-url
+        value: https://github.com/sbose78/dc-metro-map
+      - name: output-image
+        value: quay.io/redhat-appstudio/user-workload:jduimovich-dc-metro-map-$(tt.params.git-revision)
+      - name: dockerfile
+        value: Dockerfile
+      - name: path-context
+        value: .
+      pipelineRef:
+        bundle: quay.io/redhat-appstudio/build-templates-bundle:ad4c34b71d468a991450b0091cd96765471ed82d
+        name: docker-build
+      workspaces:
+      - name: workspace
+        persistentVolumeClaim:
+          claimName: appstudio
+        subPath: map-service/$(tt.params.git-revision)
+      - name: registry-auth
+        secret:
+          secretName: redhat-appstudio-registry-pull-secret
+    status: {}
+status: {}
